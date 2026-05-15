@@ -98,13 +98,10 @@ public class SignalStructureExperiment {
                 signal[i] = value;
             }
         }
-
         return signal;
     }
 
-    private static double slowOscillation(int index) {
-        return 4.0 * Math.sin(2.0 * Math.PI * index / 512.0);
-    }
+    private static double slowOscillation(int index) {return 4.0 * Math.sin(2.0 * Math.PI * index / 512.0);}
 
     private static void keepFirstCoefficients(double[] coefficients) {
         if (SignalStructureExperiment.APPROXIMATION_COEFFICIENTS < 1 || SignalStructureExperiment.APPROXIMATION_COEFFICIENTS > coefficients.length) {

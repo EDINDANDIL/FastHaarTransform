@@ -17,6 +17,7 @@ public class HaarTransform {
     public static void fht(double[] signal) {fht(signal, 1);}
 
     public static void fht(double[] signal, int levels) {
+
         validatePowerOfTwoLength(signal.length);
 
         if (levels < 0) {throw new IllegalArgumentException("Количество уровней не может быть отрицательным");}
@@ -32,14 +33,6 @@ public class HaarTransform {
         }
     }
 
-    private static void transformLevel(double[] data, double[] temp, int length, TransformOperation op) {
-        int half = length / 2;
-        for (int i = 0; i < half; i++) {
-            op.apply(data[2 * i], data[2 * i + 1], temp, i, half);
-        }
-        System.arraycopy(temp, 0, data, 0, length);
-    }
-
     private static void fhtLevel(double[] signal, double[] temp, int length) {
         transformLevel(signal, temp, length, (a, b, t, i, half) -> {
             t[i] = (a + b) / SQRT_2;
@@ -47,15 +40,13 @@ public class HaarTransform {
         });
     }
 
-    private static void inverseFhtLevel(double[] coeffs, double[] temp, int length) {
+    private static void transformLevel(double[] data, double[] temp, int length, TransformOperation op){
+
         int half = length / 2;
         for (int i = 0; i < half; i++) {
-            double sum = coeffs[i];
-            double diff = coeffs[half + i];
-            temp[2 * i] = (sum + diff) / SQRT_2;
-            temp[2 * i + 1] = (sum - diff) / SQRT_2;
+            op.apply(data[2 * i], data[2 * i + 1], temp, i, half);
         }
-        System.arraycopy(temp, 0, coeffs, 0, length);
+        System.arraycopy(temp, 0, data, 0, length);
     }
 
     private static void validatePowerOfTwoLength(int n) {
@@ -69,20 +60,17 @@ public class HaarTransform {
     public static void inverseFht(double[] coeffs, int levels) {
         validatePowerOfTwoLength(coeffs.length);
 
-        if (levels < 0) {
-            throw new IllegalArgumentException("Количество уровней не может быть отрицательным");
-        }
+        if (levels < 0) {throw new IllegalArgumentException("Количество уровней не может быть отрицательным");}
 
         int actualLevels = 0;
         int length = coeffs.length;
+
         while (length > 1 && actualLevels < levels) {
             length /= 2;
             actualLevels++;
         }
 
-        if (actualLevels == 0) {
-            return;
-        }
+        if (actualLevels == 0) return;
 
         double[] temp = new double[coeffs.length];
         length = coeffs.length >> (actualLevels - 1);
@@ -93,16 +81,29 @@ public class HaarTransform {
         }
     }
 
+    private static void inverseFhtLevel(double[] coeffs, double[] temp, int length) {
+        inverseTransformLevel(coeffs, temp, length, (sum, diff, t, i, half) -> {
+            t[2 * i] = (sum + diff) / SQRT_2;
+            t[2 * i + 1] = (sum - diff) / SQRT_2;
+        });
+    }
+
+    private static void inverseTransformLevel(double[] data, double[] temp, int length, TransformOperation op) {
+        int half = length / 2;
+        for (int i = 0; i < half; i++) {
+            op.apply(data[i], data[half + i], temp, i, half);
+        }
+        System.arraycopy(temp, 0, data, 0, length);
+    }
+
     // тут тоже для all
     public static void naiveHt(double[] signal) {
         int n = signal.length;
-
         validatePowerOfTwoLength(n);
         double[][] h = buildHaarMatrix(n);
         double[] result = new double[n];
         for (int i = 0; i < n; i++) {
             double sum = 0.0;
-
             for (int j = 0; j < n; j++) {
                 sum += h[i][j] * signal[j];
             }
@@ -130,9 +131,9 @@ public class HaarTransform {
         int rows = matrix.length;
         int cols = matrix[0].length;
 
-        if (levels < 0) {
-            throw new IllegalArgumentException("Количество уровней не может быть отрицательным");
-        }
+        validatePowerOfTwoLength(rows);
+        validatePowerOfTwoLength(cols);
+        if (levels < 0) {throw new IllegalArgumentException("Количество уровней не может быть отрицательным");}
 
         int currentRows = rows;
         int currentCols = cols;
@@ -140,27 +141,20 @@ public class HaarTransform {
         for (int level = 0; level < levels && currentRows > 1 && currentCols > 1; level++) {
             transformRows(matrix, currentRows, currentCols);
             transformColumns(matrix, currentRows, currentCols);
-
             currentRows /= 2;
             currentCols /= 2;
         }
     }
 
-    public static void fht2d(double[][] matrix) {
-        fht2d(matrix, Integer.MAX_VALUE);
-    }
+    public static void fht2d(double[][] matrix) {fht2d(matrix, Integer.MAX_VALUE);}
 
-    static void inverseFht2d(double[][] matrix) {
-        inverseFht2d(matrix, Integer.MAX_VALUE);
-    }
+    static void inverseFht2d(double[][] matrix) {inverseFht2d(matrix, Integer.MAX_VALUE);}
 
     static void inverseFht2d(double[][] matrix, int levels) {
         int rows = matrix.length;
         int cols = matrix[0].length;
 
-        if (levels < 0) {
-            throw new IllegalArgumentException("Количество уровней не может быть отрицательным");
-        }
+        if (levels < 0) {throw new IllegalArgumentException("Количество уровней не может быть отрицательным");}
 
         int actualLevels = actualLevelCount(rows, cols, levels);
 
@@ -222,9 +216,9 @@ public class HaarTransform {
 
     public static double[][] imageResourceToGrayMatrix(String resourceName) throws IOException {
         try (InputStream input = HaarTransform.class.getResourceAsStream(resourceName)) {
-            if (input == null) {
-                throw new IOException("Resource not found: " + resourceName);
-            }
+
+            if (input == null) throw new IOException("Resource not found: " + resourceName);
+
             BufferedImage image = ImageIO.read(input);
 
             int width = image.getWidth();
@@ -297,15 +291,11 @@ public class HaarTransform {
 
     private static int clampToByte(double value) {
         int rounded = (int) Math.round(value);
-        if (rounded < 0) {
-            return 0;
-        }
+        if (rounded < 0) return 0;
         return Math.min(rounded, 255);
     }
 
     public static void main(String[] args) throws IOException {
-
-        // Пример с изображением
         double[][] matrix = imageResourceToGrayMatrix("/velikodushnyy_pyos.png");
         int levels = 2;
         fht2d(matrix, levels);
