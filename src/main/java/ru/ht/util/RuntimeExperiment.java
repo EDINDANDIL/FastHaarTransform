@@ -5,9 +5,22 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Locale;
 import java.util.Random;
+import java.util.stream.DoubleStream;
 
 import static ru.ht.HaarTransform.*;
 
+/**
+ * Эксперимент сравнения скорости оригинального алгоритма и быстрого.
+ *
+ * <p>Класс сравнивает время работы двух способов вычисления преобразования Хаара:
+ * прямого матричного метода и быстрого преобразования Хаара. Для сигналов разной
+ * длины генерируются случайные данные, после чего оба алгоритма запускаются на
+ * одинаковом входе. Результаты сохраняются в файл {@code runtime.csv}, который
+ * затем используется для таблицы или графика сравнения вычислительной сложности.</p>
+ *
+ * <p>Этот класс не является частью самого алгоритма преобразования. Он нужен
+ * только для проведения эксперимента и получения численных данных для отчета.</p>
+ */
 public class RuntimeExperiment {
 
     public static void main(String[] args) throws IOException {
@@ -44,16 +57,11 @@ public class RuntimeExperiment {
                 );
             }
         }
-        System.out.println("Result saved to runtime.csv");
     }
 
     private static double[] randomArray(int length, Random random) {
-        double[] array = new double[length];
-
-        for (int i = 0; i < length; i++) {
-            array[i] = random.nextDouble();
-        }
-
-        return array;
+        return DoubleStream.generate(random::nextDouble)
+                .limit(length)
+                .toArray();
     }
 }

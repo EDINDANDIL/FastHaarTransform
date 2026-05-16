@@ -96,7 +96,6 @@ public class HaarTransform {
         System.arraycopy(temp, 0, data, 0, length);
     }
 
-    // тут тоже для all
     public static void naiveHt(double[] signal) {
         int n = signal.length;
         validatePowerOfTwoLength(n);
