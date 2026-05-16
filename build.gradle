@@ -18,10 +18,3 @@ dependencies {
 test {
     useJUnitPlatform()
 }
-
-tasks.register('runSignalStructureExperiment', JavaExec) {
-    group = 'experiments'
-    description = 'Generates signal, Haar coefficients, and restored signal charts.'
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'ru.ht.util.SignalStructureExperiment'
-}

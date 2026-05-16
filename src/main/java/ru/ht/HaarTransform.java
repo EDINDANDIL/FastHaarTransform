@@ -436,16 +436,6 @@ public class HaarTransform {
         return Math.min(rounded, 255);
     }
 
-    /**
-     * Демонстрационный запуск для построения изображений из практической части.
-     *
-     * <p>Метод загружает тестовое изображение из ресурсов, выполняет двумерное
-     * преобразование Хаара, сохраняет изображение коэффициентов, затем выполняет
-     * обратное преобразование и сохраняет восстановленное изображение.</p>
-     *
-     * @param args аргументы командной строки не используются
-     * @throws IOException если не удалось прочитать или сохранить изображение
-     */
     public static void main(String[] args) throws IOException {
         double[][] matrix = imageResourceToGrayMatrix("/velikodushnyy_pyos.png");
         int levels = 2;
