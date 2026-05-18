@@ -31,9 +31,7 @@ import static ru.ht.HaarTransform.inverseFht;
  * преобразования. Большая часть методов этого класса относится не к математике
  * преобразования, а к ручной отрисовке графиков: осей, подписей, делений,
  * легенды и линии сигнала.</p>
- *
- * <p>Этот класс не используется основной реализацией преобразования Хаара. Он
- * нужен только для эксперимента и подготовки рисунков для отчета.</p>
+ * </p>
  */
 public class SignalStructureExperiment {
 
@@ -307,5 +305,4 @@ public class SignalStructureExperiment {
         g.drawString(text, x - metrics.stringWidth(text), y);
         g.setFont(old);
     }
-
 }
